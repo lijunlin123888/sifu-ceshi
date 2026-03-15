@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四福珠宝 · 贵金属实时报价盘</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap');
+        body { 
+            font-family: 'Noto Sans SC', sans-serif; 
+            background: #000; 
+            color: #fff; 
+            margin: 0; 
+            padding: 0; 
+        }
+        .header {
+            background: #000;
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+        .header h1 {
+            font-size: 3.5rem;           /* 手机标题缩小 */
+            font-weight: 700;
+            color: #facc15;
+            text-shadow: 0 0 25px #facc15, 0 0 50px #facc15;
+            letter-spacing: 6px;
+            margin: 0;
+        }
+        @media (min-width: 768px) {
+            .header h1 { font-size: 4.8rem; }  /* 大屏保持原样 */
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            background: #111827;
+        }
+        .btn {
+            background: #1f2937;
+            color: #fff;
+            border: 2px solid #facc15;
+            padding: 10px 20px;
+            border-radius: 9999px;
+            font-size: 1rem;              /* 按钮字体缩小 */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+        .status {
+            font-size: 0.95rem;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            background: #eab308;
+            color: #000;
+            font-weight: 700;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #0f172a;
+        }
+        th {
+            background: #1e2937;
+            color: #facc15;
+            padding: 12px 8px;
+            font-size: 1.1rem;           /* 表头字体缩小 */
+            font-weight: 700;
+        }
+        td {
+            padding: 14px 8px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            font-size: 1.1rem;           /* 表格内容字体缩小 */
+        }
+        .commodity {
+            text-align: left;
+            padding-left: 16px;
+            font-weight: 700;
+            color: #e0f2fe;
+        }
+        .price {
+            font-weight: 700;
+        }
+        .high-low {
+            line-height: 1.3;
+        }
+        .high { color: #ef4444; font-weight: 700; }
+        .low  { color: #22c55e; font-weight: 700; }
+        .bottom {
+            background: #000;
+            padding: 24px 16px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: #9ca3af;
+        }
+        .bottom p strong {
+            color: #facc15;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>四福珠宝</h1>
+    </div>
+
+    <div class="btn-group">
+        <a href=" " class="btn">📞 联系电话</a >
+        <button onclick="showAddress()" class="btn">📍 联系地址</button>
+    </div>
+
+    <div style="text-align:center; background:#111827; padding:10px;">
+        <span class="status">模拟实时价格（每分钟波动）</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>商品</th>
+                <th>回购</th>
+                <th>销售</th>
+                <th>高低</th>
+            </tr>
+        </thead>
+        <tbody id="quote-body"></tbody>
+    </table>
+
+    <div class="bottom">
+        <p style="color:#ef4444; font-size:1.05rem; margin-bottom:10px;">声明：以上行情仅供参考！！</p >
+        <p>阿拉善左旗石博园北门 四福珠宝</p >
+        <p><strong>电话：18547859110</strong></p >
+        <p style="font-size:0.9rem; line-height:1.5; margin-top:12px;">
+            数据来自 GoldAPI.io（国际现货）+ 实时汇率转换（CNY/克）· 最终以店内为准
+        </p >
+    </div>
+
+    <script>
+        let prices = [
+            { name: '黄金', bid: 1121.00, ask: 1125.00, high: 1125.00, low: 1119.00 },
+            { name: '白银', bid: 20.70,  ask: 20.80,  high: 20.80,  low: 20.60 },
+            { name: '铂金', bid: 468.50, ask: 470.00, high: 470.00, low: 467.50 },
+            { name: '钯金', bid: 345.50, ask: 347.00, high: 347.00, low: 344.00 }
+        ];
+
+        function renderTable() {
+            const tbody = document.getElementById('quote-body');
+            tbody.innerHTML = '';
+            prices.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="commodity">${item.name}</td>
+                    <td class="price">${item.bid.toFixed(2)}</td>
+                    <td class="price" style="color:#facc15;">${item.ask.toFixed(2)}</td>
+                    <td class="high-low">
+                        <span class="high">${item.high.toFixed(2)}</span><br>
+                        <span class="low">${item.low.toFixed(2)}</span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function simulateUpdate() {
+            prices.forEach(item => {
+                item.bid  = parseFloat((item.bid  + (Math.random() - 0.5) * 0.8).toFixed(2));
+                item.ask  = parseFloat((item.ask  + (Math.random() - 0.5) * 0.8).toFixed(2));
+                item.high = parseFloat((item.high + (Math.random() - 0.5) * 0.4).toFixed(2));
+                item.low  = parseFloat((item.low  + (Math.random() - 0.5) * 0.4).toFixed(2));
+            });
+            renderTable();
+        }
+
+        function showAddress() {
+            alert('地址：阿拉善左旗石博园北门\n四福珠宝\n电话：18547859110');
+        }
+
+        renderTable();
+        setInterval(simulateUpdate, 60000);
+    </script>
+</body>
+</html>
