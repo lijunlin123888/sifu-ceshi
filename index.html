@@ -19,7 +19,7 @@
             padding: 30px 20px 20px;
         }
         .header h1 {
-            font-size: 3.5rem;           /* 手机标题缩小 */
+            font-size: 3.5rem;
             font-weight: 700;
             color: #facc15;
             text-shadow: 0 0 25px #facc15, 0 0 50px #facc15;
@@ -27,7 +27,7 @@
             margin: 0;
         }
         @media (min-width: 768px) {
-            .header h1 { font-size: 4.8rem; }  /* 大屏保持原样 */
+            .header h1 { font-size: 4.8rem; }
         }
         .btn-group {
             display: flex;
@@ -42,7 +42,7 @@
             border: 2px solid #facc15;
             padding: 10px 20px;
             border-radius: 9999px;
-            font-size: 1rem;              /* 按钮字体缩小 */
+            font-size: 1rem;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -65,14 +65,14 @@
             background: #1e2937;
             color: #facc15;
             padding: 12px 8px;
-            font-size: 1.1rem;           /* 表头字体缩小 */
+            font-size: 1.1rem;
             font-weight: 700;
         }
         td {
             padding: 14px 8px;
             text-align: center;
             border-bottom: 1px solid #334155;
-            font-size: 1.1rem;           /* 表格内容字体缩小 */
+            font-size: 1.1rem;
         }
         .commodity {
             text-align: left;
@@ -137,82 +137,74 @@
         </p >
     </div>
 
+    <!-- 内嵌价格数据（以后修改价格只改这里） -->
+    <script id="price-data" type="application/json">
+    {
+      "黄金": {"bid":1121.00, "ask":1125.00, "high":1125.00, "low":1119.00},
+      "白银": {"bid":20.70, "ask":20.80, "high":20.80, "low":20.60},
+      "铂金": {"bid":468.50, "ask":470.00, "high":470.00, "low":467.50},
+      "钯金": {"bid":345.50, "ask":347.00, "high":347.00, "low":344.00}
+    }
+    </script>
+
     <script>
-    let prices = [];
-
-    function renderTable() {
-        const tbody = document.getElementById('quote-body');
-        if (!tbody) {
-            console.error('找不到表格 tbody 元素');
-            return;
+        // 从内嵌 JSON 读取价格（微信本地也能正常工作）
+        const priceDataRaw = document.getElementById('price-data').textContent;
+        let priceData;
+        try {
+            priceData = JSON.parse(priceDataRaw);
+        } catch (e) {
+            console.error('JSON 解析失败，使用默认值', e);
+            priceData = {
+                "黄金": {"bid":1121.00, "ask":1125.00, "high":1125.00, "low":1119.00},
+                "白银": {"bid":20.70, "ask":20.80, "high":20.80, "low":20.60},
+                "铂金": {"bid":468.50, "ask":470.00, "high":470.00, "low":467.50},
+                "钯金": {"bid":345.50, "ask":347.00, "high":347.00, "low":344.00}
+            };
         }
-        tbody.innerHTML = '';
-        if (prices.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center;">价格数据为空</td></tr>';
-            return;
+
+        let prices = [
+            { name: '黄金', bid: priceData.黄金.bid, ask: priceData.黄金.ask, high: priceData.黄金.high, low: priceData.黄金.low },
+            { name: '白银', bid: priceData.白银.bid, ask: priceData.白银.ask, high: priceData.白银.high, low: priceData.白银.low },
+            { name: '铂金', bid: priceData.铂金.bid, ask: priceData.铂金.ask, high: priceData.铂金.high, low: priceData.铂金.low },
+            { name: '钯金', bid: priceData.钯金.bid, ask: priceData.钯金.ask, high: priceData.钯金.high, low: priceData.钯金.low }
+        ];
+
+        function renderTable() {
+            const tbody = document.getElementById('quote-body');
+            tbody.innerHTML = '';
+            prices.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="commodity">${item.name}</td>
+                    <td class="price">${item.bid.toFixed(2)}</td>
+                    <td class="price" style="color:#facc15;">${item.ask.toFixed(2)}</td>
+                    <td class="high-low">
+                        <span class="high">${item.high.toFixed(2)}</span><br>
+                        <span class="low">${item.low.toFixed(2)}</span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
         }
-        prices.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="commodity">${item.name}</td>
-                <td class="price">${item.bid.toFixed(2)}</td>
-                <td class="price" style="color:#facc15;">${item.ask.toFixed(2)}</td>
-                <td class="high-low">
-                    <span class="high">${item.high.toFixed(2)}</span><br>
-                    <span class="low">${item.low.toFixed(2)}</span>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
 
-    // 尝试加载 prices.json
-    fetch('prices.json')
-      .then(response => {
-        if (!response.ok) throw new Error('prices.json 响应不成功: ' + response.status);
-        return response.json();
-      })
-      .then(data => {
-        console.log('成功加载 prices.json:', data);  // 控制台查看数据
-        prices = [
-          { name: '黄金', bid: data.黄金.bid, ask: data.黄金.ask, high: data.黄金.high, low: data.黄金.low },
-          { name: '白银', bid: data.白银.bid, ask: data.白银.ask, high: data.白银.high, low: data.白银.low },
-          { name: '铂金', bid: data.铂金.bid, ask: data.铂金.ask, high: data.铂金.high, low: data.铂金.low },
-          { name: '钯金', bid: data.钯金.bid, ask: data.钯金.ask, high: data.钯金.high, low: data.钯金.low }
-        ];
+        function simulateUpdate() {
+            prices.forEach(item => {
+                item.bid  = parseFloat((item.bid  + (Math.random() - 0.5) * 0.8).toFixed(2));
+                item.ask  = parseFloat((item.ask  + (Math.random() - 0.5) * 0.8).toFixed(2));
+                item.high = parseFloat((item.high + (Math.random() - 0.5) * 0.4).toFixed(2));
+                item.low  = parseFloat((item.low  + (Math.random() - 0.5) * 0.4).toFixed(2));
+            });
+            renderTable();
+        }
+
+        function showAddress() {
+            alert('地址：阿拉善左旗石博园北门\n四福珠宝\n电话：18547859110');
+        }
+
+        // 立即渲染 + 每60秒波动
         renderTable();
-      })
-      .catch(err => {
-        console.error('加载 prices.json 失败:', err);
-        // 使用默认值并立即渲染
-        prices = [
-          { name: '黄金', bid: 1121.00, ask: 1125.00, high: 1125.00, low: 1119.00 },
-          { name: '白银', bid: 20.70, ask: 20.80, high: 20.80, low: 20.60 },
-          { name: '铂金', bid: 468.50, ask: 470.00, high: 470.00, low: 467.50 },
-          { name: '钯金', bid: 345.50, ask: 347.00, high: 347.00, low: 344.00 }
-        ];
-        renderTable();  // 关键：失败也要渲染
-      });
-
-    // 启动模拟波动（即使 JSON 失败，也会每分钟小跳动）
-    setInterval(() => {
-      if (prices.length > 0) {
-        prices.forEach(item => {
-          item.bid  = parseFloat((item.bid  + (Math.random() - 0.5) * 0.8).toFixed(2));
-          item.ask  = parseFloat((item.ask  + (Math.random() - 0.5) * 0.8).toFixed(2));
-          item.high = parseFloat((item.high + (Math.random() - 0.5) * 0.4).toFixed(2));
-          item.low  = parseFloat((item.low  + (Math.random() - 0.5) * 0.4).toFixed(2));
-        });
-        renderTable();
-      }
-    }, 60000);
-
-    function showAddress() {
-        alert('地址：阿拉善左旗石博园北门\n四福珠宝\n电话：18547859110');
-    }
-
-    // 页面加载后先尝试渲染一次（防万一）
-    renderTable();
-</script>
+        setInterval(simulateUpdate, 60000);
+    </script>
 </body>
 </html>
