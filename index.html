@@ -138,40 +138,30 @@
     </div>
 
     <script>
-        let prices = [
-            { name: '黄金', bid: 1121.00, ask: 1125.00, high: 1125.00, low: 1119.00 },
-            { name: '白银', bid: 20.70,  ask: 20.80,  high: 20.80,  low: 20.60 },
-            { name: '铂金', bid: 468.50, ask: 470.00, high: 470.00, low: 467.50 },
-            { name: '钯金', bid: 345.50, ask: 347.00, high: 347.00, low: 344.00 }
-        ];
+       let prices = [];
 
-        function renderTable() {
-            const tbody = document.getElementById('quote-body');
-            tbody.innerHTML = '';
-            prices.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="commodity">${item.name}</td>
-                    <td class="price">${item.bid.toFixed(2)}</td>
-                    <td class="price" style="color:#facc15;">${item.ask.toFixed(2)}</td>
-                    <td class="high-low">
-                        <span class="high">${item.high.toFixed(2)}</span><br>
-                        <span class="low">${item.low.toFixed(2)}</span>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function simulateUpdate() {
-            prices.forEach(item => {
-                item.bid  = parseFloat((item.bid  + (Math.random() - 0.5) * 0.8).toFixed(2));
-                item.ask  = parseFloat((item.ask  + (Math.random() - 0.5) * 0.8).toFixed(2));
-                item.high = parseFloat((item.high + (Math.random() - 0.5) * 0.4).toFixed(2));
-                item.low  = parseFloat((item.low  + (Math.random() - 0.5) * 0.4).toFixed(2));
-            });
-            renderTable();
-        }
+// 从 prices.json 加载价格
+fetch('prices.json')
+  .then(response => response.json())
+  .then(data => {
+    prices = [
+      { name: '黄金', bid: data.黄金.bid, ask: data.黄金.ask, high: data.黄金.high, low: data.黄金.low },
+      { name: '白银', bid: data.白银.bid, ask: data.白银.ask, high: data.白银.high, low: data.白银.low },
+      { name: '铂金', bid: data.铂金.bid, ask: data.铂金.ask, high: data.铂金.high, low: data.铂金.low },
+      { name: '钯金', bid: data.钯金.bid, ask: data.钯金.ask, high: data.钯金.high, low: data.钯金.low }
+    ];
+    renderTable();
+  })
+  .catch(err => {
+    console.error('加载价格失败', err);
+    prices = [
+      { name: '黄金', bid: 1121.00, ask: 1125.00, high: 1125.00, low: 1119.00 },
+      { name: '白银', bid: 20.70, ask: 20.80, high: 20.80, low: 20.60 },
+      { name: '铂金', bid: 468.50, ask: 470.00, high: 470.00, low: 467.50 },
+      { name: '钯金', bid: 345.50, ask: 347.00, high: 347.00, low: 344.00 }
+    ];
+    renderTable();
+  });
 
         function showAddress() {
             alert('地址：阿拉善左旗石博园北门\n四福珠宝\n电话：18547859110');
