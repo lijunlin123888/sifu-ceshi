@@ -140,32 +140,17 @@
     <script>
     let prices = [];
 
-    // 从 prices.json 加载价格
-    fetch('prices.json')
-      .then(response => response.json())
-      .then(data => {
-        prices = [
-          { name: '黄金', bid: data.黄金.bid, ask: data.黄金.ask, high: data.黄金.high, low: data.黄金.low },
-          { name: '白银', bid: data.白银.bid, ask: data.白银.ask, high: data.白银.high, low: data.白银.low },
-          { name: '铂金', bid: data.铂金.bid, ask: data.铂金.ask, high: data.铂金.high, low: data.铂金.low },
-          { name: '钯金', bid: data.钯金.bid, ask: data.钯金.ask, high: data.钯金.high, low: data.钯金.low }
-        ];
-        renderTable();
-      })
-      .catch(err => {
-        console.error('加载价格失败', err);
-        prices = [
-          { name: '黄金', bid: 1121.00, ask: 1125.00, high: 1125.00, low: 1119.00 },
-          { name: '白银', bid: 20.70, ask: 20.80, high: 20.80, low: 20.60 },
-          { name: '铂金', bid: 468.50, ask: 470.00, high: 470.00, low: 467.50 },
-          { name: '钯金', bid: 345.50, ask: 347.00, high: 347.00, low: 344.00 }
-        ];
-        renderTable();
-      });
-
     function renderTable() {
         const tbody = document.getElementById('quote-body');
+        if (!tbody) {
+            console.error('找不到表格 tbody 元素');
+            return;
+        }
         tbody.innerHTML = '';
+        if (prices.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="color:red; text-align:center;">价格数据为空</td></tr>';
+            return;
+        }
         prices.forEach(item => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -181,22 +166,53 @@
         });
     }
 
-    function simulateUpdate() {
+    // 尝试加载 prices.json
+    fetch('prices.json')
+      .then(response => {
+        if (!response.ok) throw new Error('prices.json 响应不成功: ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('成功加载 prices.json:', data);  // 控制台查看数据
+        prices = [
+          { name: '黄金', bid: data.黄金.bid, ask: data.黄金.ask, high: data.黄金.high, low: data.黄金.low },
+          { name: '白银', bid: data.白银.bid, ask: data.白银.ask, high: data.白银.high, low: data.白银.low },
+          { name: '铂金', bid: data.铂金.bid, ask: data.铂金.ask, high: data.铂金.high, low: data.铂金.low },
+          { name: '钯金', bid: data.钯金.bid, ask: data.钯金.ask, high: data.钯金.high, low: data.钯金.low }
+        ];
+        renderTable();
+      })
+      .catch(err => {
+        console.error('加载 prices.json 失败:', err);
+        // 使用默认值并立即渲染
+        prices = [
+          { name: '黄金', bid: 1121.00, ask: 1125.00, high: 1125.00, low: 1119.00 },
+          { name: '白银', bid: 20.70, ask: 20.80, high: 20.80, low: 20.60 },
+          { name: '铂金', bid: 468.50, ask: 470.00, high: 470.00, low: 467.50 },
+          { name: '钯金', bid: 345.50, ask: 347.00, high: 347.00, low: 344.00 }
+        ];
+        renderTable();  // 关键：失败也要渲染
+      });
+
+    // 启动模拟波动（即使 JSON 失败，也会每分钟小跳动）
+    setInterval(() => {
+      if (prices.length > 0) {
         prices.forEach(item => {
-            item.bid  = parseFloat((item.bid  + (Math.random() - 0.5) * 0.8).toFixed(2));
-            item.ask  = parseFloat((item.ask  + (Math.random() - 0.5) * 0.8).toFixed(2));
-            item.high = parseFloat((item.high + (Math.random() - 0.5) * 0.4).toFixed(2));
-            item.low  = parseFloat((item.low  + (Math.random() - 0.5) * 0.4).toFixed(2));
+          item.bid  = parseFloat((item.bid  + (Math.random() - 0.5) * 0.8).toFixed(2));
+          item.ask  = parseFloat((item.ask  + (Math.random() - 0.5) * 0.8).toFixed(2));
+          item.high = parseFloat((item.high + (Math.random() - 0.5) * 0.4).toFixed(2));
+          item.low  = parseFloat((item.low  + (Math.random() - 0.5) * 0.4).toFixed(2));
         });
         renderTable();
-    }
+      }
+    }, 60000);
 
     function showAddress() {
         alert('地址：阿拉善左旗石博园北门\n四福珠宝\n电话：18547859110');
     }
 
-    // 启动模拟更新（每60秒波动一次）
-    setInterval(simulateUpdate, 60000);
+    // 页面加载后先尝试渲染一次（防万一）
+    renderTable();
 </script>
 </body>
 </html>
